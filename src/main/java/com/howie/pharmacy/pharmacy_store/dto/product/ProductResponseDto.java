@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.howie.pharmacy.pharmacy_store.dto.brand.BrandResponseDto;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -28,5 +30,5 @@ public class ProductResponseDto {
     private LocalDateTime saleEndTime;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-    private Integer brandId;
+    private BrandResponseDto brand;
 }
