@@ -1,5 +1,6 @@
 package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductDto;
@@ -113,6 +115,39 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponseDto> searchProducts(String keyword) {
         List<Product> products = productRepository.searchProducts(keyword);
         return productMapper.toResponseDtoList(products);
+    }
+
+    @Override
+    @Transactional
+    public boolean setSale(List<Integer> productIds, Boolean isSale, Float discount,
+            LocalDateTime saleEndTime) {
+        if (productIds == null || productIds.isEmpty()) {
+            throw new IllegalArgumentException("At least one product ID must be provided");
+        }
+        if (isSale == null) {
+            throw new IllegalArgumentException("isSale must be provided");
+        }
+
+        List<Product> products = productRepository.findAllById(productIds);
+        if (products.isEmpty() || products.size() != productIds.size()) {
+            throw new ResourceNotFoundException("Some products were not found");
+        }
+
+        for (Product product : products) {
+            product.setIsSale(isSale);
+            if (discount != null) {
+                product.setDiscount(discount);
+            }
+            if (Boolean.TRUE.equals(isSale)) {
+                product.setSaleEndTime(saleEndTime);
+            } else {
+                product.setSaleEndTime(null);
+            }
+            product.setUpdatedAt(LocalDateTime.now());
+        }
+
+        productRepository.saveAll(products);
+        return true;
     }
 
 }

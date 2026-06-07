@@ -17,6 +17,7 @@ import com.cloudinary.Transformation;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductResponseDto;
+import com.howie.pharmacy.pharmacy_store.dto.product.ProductSaleUpdateDto;
 import com.howie.pharmacy.pharmacy_store.services.CloudinaryService;
 import com.howie.pharmacy.pharmacy_store.services.ProductService;
 
@@ -89,5 +90,16 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
         List<ProductResponseDto> products = productService.searchProducts(keyword);
         return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @PutMapping("/sale")
+    public ResponseEntity<Boolean> setSaleProducts(
+            @RequestBody ProductSaleUpdateDto saleUpdateDto) {
+        boolean success = productService.setSale(
+                saleUpdateDto.getProductIds(),
+                saleUpdateDto.getIsSale(),
+                saleUpdateDto.getDiscount(),
+                saleUpdateDto.getSaleEndTime());
+        return new ResponseEntity<>(success, HttpStatus.OK);
     }
 }
