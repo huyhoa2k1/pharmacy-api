@@ -27,4 +27,7 @@ public interface ProductService {
     Optional<ProductDto> findById(Integer id);
 
     List<ProductResponseDto> searchProducts(String keyword);
+
+    boolean setSale(List<Integer> productIds, Boolean isSale, Float discount,
+            java.time.LocalDateTime saleEndTime);
 }
