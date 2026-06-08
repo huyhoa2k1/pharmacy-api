@@ -102,4 +102,10 @@ public class ProductController {
                 saleUpdateDto.getSaleEndTime());
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
+
+    @GetMapping("/sale")
+    public ResponseEntity<List<ProductResponseDto>> getProductsOnSale() {
+        List<ProductResponseDto> productsOnSale = productService.getProductsOnSale();
+        return new ResponseEntity<>(productsOnSale, HttpStatus.OK);
+    }
 }

@@ -150,4 +150,10 @@ public class ProductServiceImpl implements ProductService {
         return true;
     }
 
+    @Override
+    public List<ProductResponseDto> getProductsOnSale() {
+        List<Product> productsOnSale = productRepository.getProductsOnSale();
+        return productMapper.toResponseDtoList(productsOnSale);
+    }
+
 }

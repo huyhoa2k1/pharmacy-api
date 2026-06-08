@@ -32,4 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
         @Modifying
         @Query("UPDATE Product p SET p.isSale = false WHERE p.isSale = true AND p.saleEndTime < :currentTime")
         int closeExpiredSales(@Param("currentTime") LocalDateTime currentTime);
+
+        @Query("SELECT p FROM Product p WHERE p.isSale = true")
+        List<Product> getProductsOnSale();
 }

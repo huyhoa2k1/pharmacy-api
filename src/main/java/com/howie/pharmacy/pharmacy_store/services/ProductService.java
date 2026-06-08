@@ -12,22 +12,24 @@ import com.howie.pharmacy.pharmacy_store.dto.product.ProductResponseDto;
 
 @Component
 public interface ProductService {
-    List<ProductResponseDto> findAll();
+        List<ProductResponseDto> findAll();
 
-    Page<ProductResponseDto> getAllProductsByCategory(Integer categoryId, List<Integer> brandIds, Double minPrice,
-            Double maxPrice, String sortBy, String sortDirection, int pageNo,
-            int pageSize);
+        Page<ProductResponseDto> getAllProductsByCategory(Integer categoryId, List<Integer> brandIds, Double minPrice,
+                        Double maxPrice, String sortBy, String sortDirection, int pageNo,
+                        int pageSize);
 
-    Optional<ProductResponseDto> create(ProductCreateDto productCreateDto);
+        Optional<ProductResponseDto> create(ProductCreateDto productCreateDto);
 
-    Optional<ProductResponseDto> update(Integer id, ProductCreateDto productCreateDto);
+        Optional<ProductResponseDto> update(Integer id, ProductCreateDto productCreateDto);
 
-    void delete(Integer id);
+        void delete(Integer id);
 
-    Optional<ProductDto> findById(Integer id);
+        Optional<ProductDto> findById(Integer id);
 
-    List<ProductResponseDto> searchProducts(String keyword);
+        List<ProductResponseDto> searchProducts(String keyword);
 
-    boolean setSale(List<Integer> productIds, Boolean isSale, Float discount,
-            java.time.LocalDateTime saleEndTime);
+        boolean setSale(List<Integer> productIds, Boolean isSale, Float discount,
+                        java.time.LocalDateTime saleEndTime);
+
+        List<ProductResponseDto> getProductsOnSale();
 }
