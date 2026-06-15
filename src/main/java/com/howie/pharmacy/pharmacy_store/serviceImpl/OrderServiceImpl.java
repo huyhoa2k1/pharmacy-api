@@ -59,6 +59,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponseDto> getAllOrdersByUserId(Integer userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orderMapper.toResponseDtoList(orders);
+    }
+
+    @Override
     public OrderDto getOrderById(Integer id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));

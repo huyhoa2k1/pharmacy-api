@@ -11,4 +11,6 @@ import com.howie.pharmacy.pharmacy_store.entity.Order;
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT o FROM Order o JOIN o.shippingAddress s WHERE o.user IS NULL AND s.phone = :phone")
     List<Order> findByPhoneAndUserIsNull(@Param("phone") String phone);
+
+    List<Order> findByUserId(Integer userId);
 }
