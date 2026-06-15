@@ -13,6 +13,8 @@ import com.howie.pharmacy.pharmacy_store.entity.Order;
 public interface OrderService {
     List<OrderResponseDto> getAllOrders();
 
+    List<OrderResponseDto> getAllOrdersByUserId(Integer userId);
+
     OrderDto getOrderById(Integer id);
 
     OrderDto createOrder(OrderCreateDto orderCreateDto);

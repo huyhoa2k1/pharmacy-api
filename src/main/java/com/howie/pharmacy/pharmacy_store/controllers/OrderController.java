@@ -1,5 +1,6 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,15 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<OrderResponseDto> getAllOrders() {
-        return new ResponseEntity(orderService.getAllOrders(), HttpStatus.OK);
+    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
+        List<OrderResponseDto> orders = orderService.getAllOrders();
+        return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderResponseDto>> getAllOrdersByUserId(@PathVariable Integer userId) {
+        List<OrderResponseDto> orders = orderService.getAllOrdersByUserId(userId);
+        return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
     @PostMapping
