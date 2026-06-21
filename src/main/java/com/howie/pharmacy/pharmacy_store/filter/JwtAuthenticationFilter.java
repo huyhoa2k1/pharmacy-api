@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.howie.pharmacy.pharmacy_store.security.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -31,8 +32,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 2. Kiểm tra token
             if (jwtUtils.validateToken(token)) {
                 String phone = jwtUtils.getPhoneFromToken(token);
+                Integer userId = jwtUtils.getUserIdFromToken(token);
+                UserPrincipal principal = new UserPrincipal(userId, phone);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(phone,
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal,
                         null, new ArrayList<>());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
