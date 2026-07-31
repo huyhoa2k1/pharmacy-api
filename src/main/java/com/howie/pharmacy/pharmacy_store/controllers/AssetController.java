@@ -3,7 +3,6 @@ package com.howie.pharmacy.pharmacy_store.controllers;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,8 +16,11 @@ import com.howie.pharmacy.pharmacy_store.services.CloudinaryService;
 @RequestMapping("/api/assets")
 public class AssetController {
 
-    @Autowired
-    private CloudinaryService cloudinaryService;
+    private final CloudinaryService cloudinaryService;
+
+    public AssetController(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
 
     @PostMapping("/upload-logo")
     public UploadAssetResponseDto uploadLogo(

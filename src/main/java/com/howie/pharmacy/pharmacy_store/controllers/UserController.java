@@ -1,6 +1,5 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +12,11 @@ import com.howie.pharmacy.pharmacy_store.serviceImpl.UserServiceImpl;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    @Autowired
-    private UserServiceImpl userServiceImpl;
+    private final UserServiceImpl userServiceImpl;
+
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
+    }
 
     @GetMapping("/current")
     public ResponseEntity<UserDto> getCurrentUser() {

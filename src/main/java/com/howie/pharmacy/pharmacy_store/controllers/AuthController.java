@@ -2,7 +2,6 @@ package com.howie.pharmacy.pharmacy_store.controllers;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,13 +24,15 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    private AuthServiceImpl authService;
+    private final AuthServiceImpl authService;
+    private final RefreshTokenServiceImpl refreshTokenService;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private RefreshTokenServiceImpl refreshTokenService;
-    @Autowired
-    private JwtUtils jwtUtils;
+    public AuthController(AuthServiceImpl authService, RefreshTokenServiceImpl refreshTokenService, JwtUtils jwtUtils) {
+        this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
+        this.jwtUtils = jwtUtils;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequestDto request) {

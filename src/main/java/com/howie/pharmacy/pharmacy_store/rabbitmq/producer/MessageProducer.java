@@ -1,7 +1,6 @@
 package com.howie.pharmacy.pharmacy_store.rabbitmq.producer;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.config.RabbitMQConfig;
@@ -9,8 +8,11 @@ import com.howie.pharmacy.pharmacy_store.config.RabbitMQConfig;
 @Service
 public class MessageProducer {
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
+
+    public MessageProducer(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     public void sendMessage(String message) {
         System.out.println("Sending message: " + message + " to exchange: " + RabbitMQConfig.EXCHANGE_NAME

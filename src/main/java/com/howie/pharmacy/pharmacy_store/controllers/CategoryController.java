@@ -1,6 +1,5 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +16,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/categories")
 @Tag(name = "Category", description = "Category Management APIs")
 public class CategoryController {
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CategoryCreateDto categoryCreateDto) {
@@ -42,7 +44,8 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable Integer id, @RequestBody CategoryCreateDto categoryCreateDto) {
+    public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable Integer id,
+            @RequestBody CategoryCreateDto categoryCreateDto) {
         return categoryService.update(id, categoryCreateDto)
                 .map(updatedCategory -> new ResponseEntity<>(updatedCategory, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));

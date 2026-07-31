@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,13 @@ import com.howie.pharmacy.pharmacy_store.services.ProductService;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+    private final CloudinaryService cloudinaryService;
 
-    @Autowired
-    private CloudinaryService cloudinaryService;
+    public ProductController(ProductService productService, CloudinaryService cloudinaryService) {
+        this.productService = productService;
+        this.cloudinaryService = cloudinaryService;
+    }
 
     @PostMapping("/upload-images")
     public List<String> uploadFileWithResize(@RequestParam("files") List<MultipartFile> files) {

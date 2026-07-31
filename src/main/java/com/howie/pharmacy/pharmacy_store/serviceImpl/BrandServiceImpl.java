@@ -3,7 +3,6 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.dto.brand.BrandDto;
@@ -21,14 +20,16 @@ import jakarta.transaction.Transactional;
 @Service
 public class BrandServiceImpl implements BrandService {
 
-    @Autowired
-    private BrandRepository brandRepository;
+    private final BrandRepository brandRepository;
+    private final CategoryRepository categoryRepository;
+    private final BrandMapper brandMapper;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private BrandMapper brandMapper;
+    public BrandServiceImpl(BrandRepository brandRepository, CategoryRepository categoryRepository,
+            BrandMapper brandMapper) {
+        this.brandRepository = brandRepository;
+        this.categoryRepository = categoryRepository;
+        this.brandMapper = brandMapper;
+    }
 
     @Transactional
     @Override

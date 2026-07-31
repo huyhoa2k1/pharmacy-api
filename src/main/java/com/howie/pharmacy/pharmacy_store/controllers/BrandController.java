@@ -2,7 +2,6 @@ package com.howie.pharmacy.pharmacy_store.controllers;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,11 @@ import com.howie.pharmacy.pharmacy_store.services.BrandService;
 @RestController
 @RequestMapping("/api/brands")
 public class BrandController {
-    @Autowired
-    private BrandService brandService;
+    private final BrandService brandService;
+
+    public BrandController(BrandService brandService) {
+        this.brandService = brandService;
+    }
 
     @PostMapping
     public ResponseEntity<BrandResponseDto> createBrand(@RequestBody BrandCreateDto brandCreateDto) {

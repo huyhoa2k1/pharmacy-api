@@ -2,7 +2,6 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,23 +20,22 @@ import com.howie.pharmacy.pharmacy_store.utils.JwtUtils;
 
 @Service
 public class AuthServiceImpl {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenServiceImpl refreshTokenService;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private RefreshTokenServiceImpl refreshTokenService;
-
-    @Autowired
-    private OrderRepository orderRepository;
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper,
+            JwtUtils jwtUtils, RefreshTokenServiceImpl refreshTokenService, OrderRepository orderRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+        this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
+        this.orderRepository = orderRepository;
+    }
 
     @Transactional
     public UserDto register(RegisterRequestDto request) {
