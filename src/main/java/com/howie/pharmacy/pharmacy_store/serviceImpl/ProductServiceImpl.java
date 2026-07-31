@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,14 +26,16 @@ import com.howie.pharmacy.pharmacy_store.services.ProductService;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final BrandRepository brandRepository;
+    private final ProductMapper productMapper;
 
-    @Autowired
-    private BrandRepository brandRepository;
-
-    @Autowired
-    private ProductMapper productMapper;
+    public ProductServiceImpl(ProductRepository productRepository, BrandRepository brandRepository,
+            ProductMapper productMapper) {
+        this.productRepository = productRepository;
+        this.brandRepository = brandRepository;
+        this.productMapper = productMapper;
+    }
 
     @Override
     // @Cacheable(value = "productCache", key = "'allProducts'")

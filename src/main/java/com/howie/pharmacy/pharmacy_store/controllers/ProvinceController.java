@@ -4,7 +4,6 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,11 +21,13 @@ import com.howie.pharmacy.pharmacy_store.services.WardService;
 @RestController
 @RequestMapping("/api/provinces")
 public class ProvinceController {
-    @Autowired
-    private ProvinceService provinceService;
+    private final ProvinceService provinceService;
+    private final WardService wardService;
 
-    @Autowired
-    private WardService wardService;
+    public ProvinceController(ProvinceService provinceService, WardService wardService) {
+        this.provinceService = provinceService;
+        this.wardService = wardService;
+    }
 
     @GetMapping()
     public List<Province> getAllProvinces() {

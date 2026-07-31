@@ -3,7 +3,6 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +16,13 @@ import com.howie.pharmacy.pharmacy_store.services.WardService;
 @Service
 public class WardServiceImpl implements WardService {
 
-    @Autowired
-    private WardRepository wardRepository;
+    private final WardRepository wardRepository;
+    private final ProvinceRepository provinceRepository;
 
-    @Autowired
-    private ProvinceRepository provinceRepository;
+    public WardServiceImpl(WardRepository wardRepository, ProvinceRepository provinceRepository) {
+        this.wardRepository = wardRepository;
+        this.provinceRepository = provinceRepository;
+    }
 
     @Override
     public List<Ward> getWardsByProvinceCode(String provinceCode) {

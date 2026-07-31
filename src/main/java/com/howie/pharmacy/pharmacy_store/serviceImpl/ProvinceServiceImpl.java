@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +14,11 @@ import com.howie.pharmacy.pharmacy_store.services.ProvinceService;
 
 @Service
 public class ProvinceServiceImpl implements ProvinceService {
-    @Autowired
-    private ProvinceRepository provinceRepository;
+    private final ProvinceRepository provinceRepository;
+
+    public ProvinceServiceImpl(ProvinceRepository provinceRepository) {
+        this.provinceRepository = provinceRepository;
+    }
 
     @Override
     public List<Province> findAll() {

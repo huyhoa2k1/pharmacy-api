@@ -3,7 +3,6 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryDto;
@@ -18,11 +17,13 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    @Autowired
-    private CategoryMapper categoryMapper;
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+        this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
+    }
 
     @Override
     @Transactional
@@ -36,11 +37,11 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.existsByName(categoryCreateDto.getName())) {
             throw new IllegalArgumentException("Category with this name already exists");
         }
-        
+
         Category category = categoryMapper.toEntity(categoryCreateDto);
         category.setCreatedAt(java.time.LocalDateTime.now());
         category.setUpdatedAt(java.time.LocalDateTime.now());
-        
+
         return Optional.of(categoryMapper.toResponseDto(categoryRepository.save(category)));
     }
 
@@ -48,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Optional<CategoryResponseDto> update(Integer id, CategoryCreateDto categoryCreateDto) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        
+
         if (categoryRepository.existsByName(categoryCreateDto.getName())
                 && !existingCategory.getName().equals(categoryCreateDto.getName())) {
             throw new IllegalArgumentException("Category with this name already exists");
@@ -56,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryMapper.updateEntityFromDto(categoryCreateDto, existingCategory);
         existingCategory.setUpdatedAt(java.time.LocalDateTime.now());
-        
+
         return Optional.of(categoryMapper.toResponseDto(categoryRepository.save(existingCategory)));
     }
 
