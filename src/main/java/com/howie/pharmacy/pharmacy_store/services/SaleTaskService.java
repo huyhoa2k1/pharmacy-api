@@ -24,18 +24,22 @@ public class SaleTaskService {
         System.out.println("Ứng dụng đã khởi động. Kiểm tra và cập nhật các sản phẩm hết hạn khuyến mãi...");
     }
 
-    @Scheduled(cron = "0 * * * * *") // Chạy vào phút đầu tiên của mỗi giờ
-    @Transactional
+    @Scheduled(cron = "0 * * * * *")
     public void updateExpiredSales() {
         System.out.println("Đang kiểm tra và cập nhật các sản phẩm hết hạn khuyến mãi...");
 
-        // int updatedProducts =
-        // productRepository.closeExpiredSales(LocalDateTime.now());
+        LocalDateTime currentTime = LocalDateTime.now();
 
-        // if (updatedProducts > 0) {
-        // System.out.println("Đã cập nhật " + updatedProducts + " sản phẩm hết hạn
-        // khuyến mãi.");
-        // }
+        if (!productRepository.existsExpiredSales(currentTime)) {
+            System.out.println("Không có sản phẩm nào hết hạn khuyến mãi cần cập nhật.");
+            return;
+        }
+
+        int updatedProducts = productRepository.closeExpiredSales(currentTime);
+
+        if (updatedProducts > 0) {
+            System.out.println("Đã cập nhật " + updatedProducts + " sản phẩm hết hạn khuyến mãi.");
+        }
     }
 
 }
