@@ -20,14 +20,15 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        return new ErrorResponse(
-                java.time.LocalDateTime.now(),
-                404,
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex,
+            WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
                 request.getDescription(false));
-
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -56,22 +57,25 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AppExceptions.BadRequestException.class)
-    public ErrorResponse handleBadRequestException(AppExceptions.BadRequestException ex, HttpServletRequest request) {
-        return new ErrorResponse(
-                java.time.LocalDateTime.now(),
-                400,
+    public ResponseEntity<ErrorResponse> handleBadRequestException(AppExceptions.BadRequestException ex,
+            HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
                 ex.getMessage(),
                 request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
-    public ErrorResponse handleGeneralException(Exception ex, HttpServletRequest request) {
-        return new ErrorResponse(
-                java.time.LocalDateTime.now(),
-                500,
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
                 ex.getMessage(),
                 request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

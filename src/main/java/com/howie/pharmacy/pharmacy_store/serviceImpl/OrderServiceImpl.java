@@ -39,10 +39,12 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper orderItemMapper;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final com.howie.pharmacy.pharmacy_store.services.NotificationService notificationService;
 
     public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper,
             ShippingAddressMapper shippingAddressMapper, RabbitTemplate rabbitTemplate, OrderItemMapper orderItemMapper,
-            ProductRepository productRepository, UserRepository userRepository) {
+            ProductRepository productRepository, UserRepository userRepository,
+            com.howie.pharmacy.pharmacy_store.services.NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.shippingAddressMapper = shippingAddressMapper;
@@ -50,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderItemMapper = orderItemMapper;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -134,6 +137,15 @@ public class OrderServiceImpl implements OrderService {
         rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EVENTS_EXCHANGE, RabbitMQConfig.ORDER_CREATED_ROUTING_KEY,
                 orderCreateEvent);
         System.out.println("Order " + savedOrder.getId() + " created and event published to RabbitMQ.");
+
+        try {
+            java.util.Map<String, Object> notifyData = java.util.Map.of(
+                    "orderId", savedOrder.getId(),
+                    "orderCode", savedOrder.getOrderCode());
+            notificationService.createNotification("New order created", notifyData);
+        } catch (Exception ex) {
+            System.err.println("Failed to create/send notification: " + ex.getMessage());
+        }
 
         return orderMapper.toDto(savedOrder);
     }
