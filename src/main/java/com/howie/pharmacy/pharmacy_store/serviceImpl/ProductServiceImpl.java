@@ -157,4 +157,13 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDtoList(productsOnSale);
     }
 
+    @Override
+    public List<ProductResponseDto> getBestSellingProducts(Integer minSold) {
+        if (minSold == null || minSold < 0) {
+            minSold = 5;
+        }
+        List<Product> products = productRepository.getBestSellingProducts(minSold);
+        return productMapper.toResponseDtoList(products);
+    }
+
 }

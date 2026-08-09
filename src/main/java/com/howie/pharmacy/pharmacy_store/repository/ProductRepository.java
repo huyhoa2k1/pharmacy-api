@@ -38,4 +38,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
         @Query("SELECT p FROM Product p WHERE p.isSale = true")
         List<Product> getProductsOnSale();
+
+        @Query("SELECT p FROM Product p WHERE p.sold >= :minSold ORDER BY p.sold DESC")
+        List<Product> getBestSellingProducts(@Param("minSold") Integer minSold);
 }

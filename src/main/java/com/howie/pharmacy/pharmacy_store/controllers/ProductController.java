@@ -109,4 +109,11 @@ public class ProductController {
         List<ProductResponseDto> productsOnSale = productService.getProductsOnSale();
         return new ResponseEntity<>(productsOnSale, HttpStatus.OK);
     }
+
+    @GetMapping("/best-sellers")
+    public ResponseEntity<List<ProductResponseDto>> getBestSellingProducts(
+            @RequestParam(defaultValue = "5") Integer minSold) {
+        List<ProductResponseDto> products = productService.getBestSellingProducts(minSold);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }

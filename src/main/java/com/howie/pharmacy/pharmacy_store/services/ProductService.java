@@ -24,6 +24,8 @@ public interface ProductService {
 
         void delete(Integer id);
 
+        List<ProductResponseDto> getBestSellingProducts(Integer minSold);
+
         Optional<ProductDto> findById(Integer id);
 
         List<ProductResponseDto> searchProducts(String keyword);
