@@ -6,10 +6,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class SaleTaskService {
@@ -25,6 +24,7 @@ public class SaleTaskService {
     }
 
     @Scheduled(cron = "0 * * * * *")
+    @Transactional
     public void updateExpiredSales() {
         System.out.println("Đang kiểm tra và cập nhật các sản phẩm hết hạn khuyến mãi...");
 
