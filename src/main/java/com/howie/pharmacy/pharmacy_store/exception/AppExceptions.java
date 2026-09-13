@@ -18,4 +18,10 @@ public class AppExceptions {
             super(message);
         }
     }
+
+    public static class RateLimitExceededException extends RuntimeException {
+        public RateLimitExceededException(String message) {
+            super(message);
+        }
+    }
 }
