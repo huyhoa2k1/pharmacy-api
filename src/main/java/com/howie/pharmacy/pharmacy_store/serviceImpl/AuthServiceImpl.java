@@ -26,15 +26,18 @@ public class AuthServiceImpl {
     private final JwtUtils jwtUtils;
     private final RefreshTokenServiceImpl refreshTokenService;
     private final OrderRepository orderRepository;
+    private final LoginRateLimiterService loginRateLimiterService;
 
     public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper,
-            JwtUtils jwtUtils, RefreshTokenServiceImpl refreshTokenService, OrderRepository orderRepository) {
+            JwtUtils jwtUtils, RefreshTokenServiceImpl refreshTokenService, OrderRepository orderRepository,
+            LoginRateLimiterService loginRateLimiterService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
         this.orderRepository = orderRepository;
+        this.loginRateLimiterService = loginRateLimiterService;
     }
 
     @Transactional
@@ -67,12 +70,16 @@ public class AuthServiceImpl {
     }
 
     public AuthResponseDto login(LoginRequestDto request) {
-        User user = userRepository.findByPhone(request.getPhone())
-                .orElseThrow(() -> new BadRequestException("Invalid phone number or password"));
+        String phone = request.getPhone();
+        loginRateLimiterService.checkAccountLocked(phone);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        User user = userRepository.findByPhone(phone).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            loginRateLimiterService.recordFailedAttempt(phone);
             throw new BadRequestException("Invalid phone number or password");
         }
+
+        loginRateLimiterService.resetFailedAttempts(phone);
 
         String accessToken = jwtUtils.generateToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
