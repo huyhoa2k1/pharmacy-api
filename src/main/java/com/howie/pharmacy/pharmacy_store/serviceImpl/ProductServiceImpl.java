@@ -113,6 +113,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDto> searchProducts(String keyword) {
         List<Product> products = productRepository.searchProducts(keyword);
         return productMapper.toResponseDtoList(products);

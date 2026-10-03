@@ -26,7 +26,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
                         @Param("maxPrice") Double maxPrice,
                         Pageable pageable);
 
-        @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+        @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))"
+                        + " OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
         List<Product> searchProducts(@Param("keyword") String keyword);
 
         @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Product p WHERE p.isSale = true AND p.saleEndTime < :currentTime")
