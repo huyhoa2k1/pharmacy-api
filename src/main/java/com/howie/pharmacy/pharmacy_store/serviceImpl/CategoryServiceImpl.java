@@ -11,7 +11,9 @@ import com.howie.pharmacy.pharmacy_store.dto.category.CategoryCreateDto;
 import com.howie.pharmacy.pharmacy_store.entity.Category;
 import com.howie.pharmacy.pharmacy_store.mapper.CategoryMapper;
 import com.howie.pharmacy.pharmacy_store.repository.CategoryRepository;
+import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.CategoryService;
+import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
 
 import jakarta.transaction.Transactional;
 
@@ -19,10 +21,15 @@ import jakarta.transaction.Transactional;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
+    private final ProductVectorIndexService productVectorIndexService;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper,
+            ProductRepository productRepository, ProductVectorIndexService productVectorIndexService) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.productRepository = productRepository;
+        this.productVectorIndexService = productVectorIndexService;
     }
 
     @Override
@@ -46,6 +53,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public Optional<CategoryResponseDto> update(Integer id, CategoryCreateDto categoryCreateDto) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
@@ -58,14 +66,18 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.updateEntityFromDto(categoryCreateDto, existingCategory);
         existingCategory.setUpdatedAt(java.time.LocalDateTime.now());
 
-        return Optional.of(categoryMapper.toResponseDto(categoryRepository.save(existingCategory)));
+        Category savedCategory = categoryRepository.save(existingCategory);
+        productRepository.findIdsByCategoryId(savedCategory.getId()).forEach(productVectorIndexService::enqueue);
+        return Optional.of(categoryMapper.toResponseDto(savedCategory));
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found");
         }
+        productRepository.findIdsByCategoryId(id).forEach(productVectorIndexService::enqueue);
         categoryRepository.deleteById(id);
     }
 

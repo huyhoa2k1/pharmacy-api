@@ -13,7 +13,9 @@ import com.howie.pharmacy.pharmacy_store.entity.Category;
 import com.howie.pharmacy.pharmacy_store.mapper.BrandMapper;
 import com.howie.pharmacy.pharmacy_store.repository.BrandRepository;
 import com.howie.pharmacy.pharmacy_store.repository.CategoryRepository;
+import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.BrandService;
+import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
 
 import jakarta.transaction.Transactional;
 
@@ -23,12 +25,17 @@ public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final BrandMapper brandMapper;
+    private final ProductRepository productRepository;
+    private final ProductVectorIndexService productVectorIndexService;
 
     public BrandServiceImpl(BrandRepository brandRepository, CategoryRepository categoryRepository,
-            BrandMapper brandMapper) {
+            BrandMapper brandMapper, ProductRepository productRepository,
+            ProductVectorIndexService productVectorIndexService) {
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
         this.brandMapper = brandMapper;
+        this.productRepository = productRepository;
+        this.productVectorIndexService = productVectorIndexService;
     }
 
     @Transactional
@@ -56,6 +63,7 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    @Transactional
     public Optional<BrandResponseDto> update(Integer id, BrandCreateDto brandCreateDto) {
         Brand existingBrand = brandRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
@@ -72,14 +80,18 @@ public class BrandServiceImpl implements BrandService {
         existingBrand.setCategory(category);
         existingBrand.setUpdatedAt(java.time.LocalDateTime.now());
 
-        return Optional.of(brandMapper.toResponseDto(brandRepository.save(existingBrand)));
+        Brand savedBrand = brandRepository.save(existingBrand);
+        productRepository.findIdsByBrandId(savedBrand.getId()).forEach(productVectorIndexService::enqueue);
+        return Optional.of(brandMapper.toResponseDto(savedBrand));
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!brandRepository.existsById(id)) {
             throw new IllegalArgumentException("Brand not found");
         }
+        productRepository.findIdsByBrandId(id).forEach(productVectorIndexService::enqueue);
         brandRepository.deleteById(id);
     }
 
