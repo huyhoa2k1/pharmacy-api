@@ -2,6 +2,7 @@ package com.howie.pharmacy.pharmacy_store.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,10 @@ public interface ProductService {
         List<ProductResponseDto> getBestSellingProducts(Integer minSold);
 
         Optional<ProductDto> findById(Integer id);
+
+        List<ProductResponseDto> findByIds(List<Integer> ids);
+
+        List<ProductResponseDto> findByPriceRange(BigDecimal minimum, BigDecimal maximum, int limit);
 
         List<ProductResponseDto> searchProducts(String keyword);
 

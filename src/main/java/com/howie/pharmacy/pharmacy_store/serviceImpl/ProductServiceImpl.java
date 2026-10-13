@@ -1,6 +1,7 @@
 package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ import com.howie.pharmacy.pharmacy_store.mapper.ProductMapper;
 import com.howie.pharmacy.pharmacy_store.repository.BrandRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.ProductService;
+import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -29,12 +31,14 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
     private final ProductMapper productMapper;
+    private final ProductVectorIndexService productVectorIndexService;
 
     public ProductServiceImpl(ProductRepository productRepository, BrandRepository brandRepository,
-            ProductMapper productMapper) {
+            ProductMapper productMapper, ProductVectorIndexService productVectorIndexService) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
         this.productMapper = productMapper;
+        this.productVectorIndexService = productVectorIndexService;
     }
 
     @Override
@@ -61,6 +65,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Optional<ProductResponseDto> create(ProductCreateDto productCreateDto) {
         if (productRepository.existsByName(productCreateDto.getName())) {
             throw new IllegalArgumentException("Product with this name already exists");
@@ -74,10 +79,13 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(java.time.LocalDateTime.now());
         product.setUpdatedAt(java.time.LocalDateTime.now());
 
-        return Optional.of(productMapper.toResponseDto(productRepository.save(product)));
+        Product savedProduct = productRepository.save(product);
+        productVectorIndexService.enqueue(savedProduct.getId());
+        return Optional.of(productMapper.toResponseDto(savedProduct));
     }
 
     @Override
+    @Transactional
     public Optional<ProductResponseDto> update(Integer id, ProductCreateDto productCreateDto) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
@@ -93,14 +101,18 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setBrand(brand);
         existingProduct.setUpdatedAt(java.time.LocalDateTime.now());
 
-        return Optional.of(productMapper.toResponseDto(productRepository.save(existingProduct)));
+        Product savedProduct = productRepository.save(existingProduct);
+        productVectorIndexService.enqueue(savedProduct.getId());
+        return Optional.of(productMapper.toResponseDto(savedProduct));
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         if (!productRepository.existsById(id)) {
             throw new IllegalArgumentException("Product not found");
         }
+        productVectorIndexService.enqueue(id);
         productRepository.deleteById(id);
     }
 
@@ -110,6 +122,20 @@ public class ProductServiceImpl implements ProductService {
         return Optional.ofNullable(productRepository.findById(id)
                 .map(productMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found")));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> findByIds(List<Integer> ids) {
+        return productMapper.toResponseDtoList(productRepository.findAllById(ids));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> findByPriceRange(BigDecimal minimum, BigDecimal maximum, int limit) {
+        int boundedLimit = Math.min(Math.max(limit, 1), 20);
+        return productMapper.toResponseDtoList(productRepository.findProductsByPriceRange(
+                minimum, maximum, PageRequest.of(0, boundedLimit)));
     }
 
     @Override

@@ -17,4 +17,12 @@ class PharmacyChatServiceTest {
         assertEquals("vitamin c", PharmacyChatService.normalizeProductQuery("Tìm giúp tôi vitamin C"));
         assertEquals("viêm họng", PharmacyChatService.normalizeProductQuery("thuốc trị viêm họng"));
     }
+
+    @Test
+    void removesCatalogQuestionFillerWithoutLosingProductKeywords() {
+        assertEquals("kem đánh răng",
+                PharmacyChatService.normalizeProductQuery("Có loại kem đánh răng nào không?"));
+        assertEquals("kem đánh răng",
+                PharmacyChatService.normalizeProductQuery("Tôi hỏi kem đánh răng trong sản phẩm"));
+    }
 }
