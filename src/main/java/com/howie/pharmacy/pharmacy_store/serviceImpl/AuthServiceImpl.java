@@ -42,16 +42,12 @@ public class AuthServiceImpl {
 
     @Transactional
     public UserDto register(RegisterRequestDto request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email is already in use");
-        }
         if (userRepository.existsByPhone(request.getPhone())) {
             throw new BadRequestException("Phone number is already in use");
         }
 
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setRole(User.ERole.CUSTOMER);
         user.setPassword(passwordEncoder.encode(request.getPassword()));

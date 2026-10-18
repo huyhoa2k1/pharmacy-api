@@ -13,5 +13,4 @@ public class OrderCreateEvent implements Serializable {
     private Integer orderId;
     private String orderCode;
     private Integer userId;
-    private String userEmail;
 }

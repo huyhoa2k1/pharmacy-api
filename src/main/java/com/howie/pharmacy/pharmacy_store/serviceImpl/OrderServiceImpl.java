@@ -131,7 +131,6 @@ public class OrderServiceImpl implements OrderService {
         OrderCreateEvent orderCreateEvent = new OrderCreateEvent();
         orderCreateEvent.setOrderId(savedOrder.getId());
         orderCreateEvent.setUserId(1);
-        orderCreateEvent.setUserEmail("");
 
         // Gửi sự kiện OrderCreateEvent đến RabbitMQ
         rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EVENTS_EXCHANGE, RabbitMQConfig.ORDER_CREATED_ROUTING_KEY,

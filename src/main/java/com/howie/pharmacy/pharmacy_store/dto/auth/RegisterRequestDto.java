@@ -1,6 +1,5 @@
 package com.howie.pharmacy.pharmacy_store.dto.auth;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,10 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequestDto {
     private String username;
-
-    @Email(message = "Email should be valid")
-    @NotBlank(message = "Email is required")
-    private String email;
 
     @Size(min = 4, message = "Password must be at least 4 characters")
     private String password;
