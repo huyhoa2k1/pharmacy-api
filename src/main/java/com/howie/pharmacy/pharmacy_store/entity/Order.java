@@ -56,6 +56,10 @@ public class Order {
     @Column()
     private String orderCode;
 
+    // Mã số gửi sang PayOS (PayOS yêu cầu orderCode dạng số, không trùng lặp)
+    @Column(name = "payos_order_code", unique = true)
+    private Long payosOrderCode;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
