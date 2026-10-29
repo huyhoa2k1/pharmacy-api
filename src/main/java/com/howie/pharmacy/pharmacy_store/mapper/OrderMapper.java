@@ -33,6 +33,7 @@ public interface OrderMapper {
     @Mapping(target = "isPaid", ignore = true)
     @Mapping(target = "slugStatus", ignore = true)
     @Mapping(target = "orderCode", ignore = true)
+    @Mapping(target = "payosOrderCode", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "user", ignore = true)
     Order toEntity(OrderCreateDto orderCreateDto);
@@ -44,6 +45,7 @@ public interface OrderMapper {
     @Mapping(target = "isPaid", ignore = true)
     @Mapping(target = "slugStatus", ignore = true)
     @Mapping(target = "orderCode", ignore = true)
+    @Mapping(target = "payosOrderCode", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "user", ignore = true)
     void updateEntityFromDto(OrderCreateDto orderCreateDto, @MappingTarget Order order);
