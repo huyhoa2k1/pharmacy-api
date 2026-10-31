@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.factory.Mappers;
 
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryDto;
@@ -29,6 +31,7 @@ public interface CategoryMapper {
     @Mapping(target = "updatedAt", ignore = true)
     Category toEntity(CategoryCreateDto categoryCreateDto);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "brands", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "id", ignore = true)

@@ -19,6 +19,7 @@ public class CategoryDto {
     private Integer id;
     private String name;
     private String slug;
+    private String imageUrl;
     private LocalDate createdAt;
     private LocalDate updatedAt;
     private List<BrandResponseDto> brands;

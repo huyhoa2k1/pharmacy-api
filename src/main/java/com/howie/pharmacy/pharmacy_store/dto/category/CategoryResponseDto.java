@@ -16,6 +16,7 @@ public class CategoryResponseDto {
     private Integer id;
     private String name;
     private String slug;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

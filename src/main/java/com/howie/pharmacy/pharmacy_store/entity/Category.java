@@ -30,6 +30,9 @@ public class Category {
     @Column()
     private String slug;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
