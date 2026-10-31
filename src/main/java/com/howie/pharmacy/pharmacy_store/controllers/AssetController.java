@@ -37,4 +37,10 @@ public class AssetController {
             throws IOException {
         return cloudinaryService.uploadImageAssets(files, "banner", publicIds);
     }
+
+    @PostMapping("/upload-category-image")
+    public UploadAssetResponseDto uploadCategoryImage(@RequestParam("file") MultipartFile file)
+            throws IOException {
+        return cloudinaryService.uploadImageAsset(file, "category", null);
+    }
 }

@@ -46,6 +46,9 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = categoryMapper.toEntity(categoryCreateDto);
+        if (category.getImageUrl() != null && category.getImageUrl().isBlank()) {
+            category.setImageUrl(null);
+        }
         category.setCreatedAt(java.time.LocalDateTime.now());
         category.setUpdatedAt(java.time.LocalDateTime.now());
 
@@ -64,6 +67,10 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryMapper.updateEntityFromDto(categoryCreateDto, existingCategory);
+        // Blank imageUrl is the client's signal to clear the image; null keeps the current one.
+        if (categoryCreateDto.getImageUrl() != null && categoryCreateDto.getImageUrl().isBlank()) {
+            existingCategory.setImageUrl(null);
+        }
         existingCategory.setUpdatedAt(java.time.LocalDateTime.now());
 
         Category savedCategory = categoryRepository.save(existingCategory);
