@@ -24,6 +24,7 @@ import com.howie.pharmacy.pharmacy_store.repository.BrandRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.ProductService;
 import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
+import com.howie.pharmacy.pharmacy_store.services.StoreService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -32,13 +33,16 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandRepository;
     private final ProductMapper productMapper;
     private final ProductVectorIndexService productVectorIndexService;
+    private final StoreService storeService;
 
     public ProductServiceImpl(ProductRepository productRepository, BrandRepository brandRepository,
-            ProductMapper productMapper, ProductVectorIndexService productVectorIndexService) {
+            ProductMapper productMapper, ProductVectorIndexService productVectorIndexService,
+            StoreService storeService) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
         this.productMapper = productMapper;
         this.productVectorIndexService = productVectorIndexService;
+        this.storeService = storeService;
     }
 
     @Override
@@ -80,6 +84,7 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedAt(java.time.LocalDateTime.now());
 
         Product savedProduct = productRepository.save(product);
+        storeService.reconcileStock(savedProduct);
         productVectorIndexService.enqueue(savedProduct.getId());
         return Optional.of(productMapper.toResponseDto(savedProduct));
     }
@@ -102,6 +107,7 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setUpdatedAt(java.time.LocalDateTime.now());
 
         Product savedProduct = productRepository.save(existingProduct);
+        storeService.reconcileStock(savedProduct);
         productVectorIndexService.enqueue(savedProduct.getId());
         return Optional.of(productMapper.toResponseDto(savedProduct));
     }

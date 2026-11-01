@@ -17,10 +17,14 @@ public interface ShippingAddressMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "order", ignore = true)
+    @Mapping(target = "latitude", ignore = true)
+    @Mapping(target = "longitude", ignore = true)
     ShippingAddress toEntity(ShippingAddressCreateDto shippingAddressCreateDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "order", ignore = true)
+    @Mapping(target = "latitude", ignore = true)
+    @Mapping(target = "longitude", ignore = true)
     void updateEntityFromDto(ShippingAddressCreateDto shippingAddressCreateDto,
             @MappingTarget ShippingAddress shippingAddress);
 }

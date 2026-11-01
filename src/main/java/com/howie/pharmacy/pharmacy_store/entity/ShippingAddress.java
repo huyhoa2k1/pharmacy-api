@@ -14,7 +14,8 @@ import lombok.AllArgsConstructor;
 @Table(name = "shipping_addresses")
 public class ShippingAddress {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @OneToOne
@@ -38,5 +39,10 @@ public class ShippingAddress {
 
     @Column(columnDefinition = "TEXT")
     private String address;
-}
 
+    @Column
+    private Double latitude;
+
+    @Column
+    private Double longitude;
+}

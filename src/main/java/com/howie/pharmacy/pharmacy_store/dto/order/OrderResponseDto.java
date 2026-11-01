@@ -23,6 +23,9 @@ public class OrderResponseDto {
     private BigDecimal totalPrice;
     private Boolean isPaid;
     private String orderCode;
+    private BigDecimal shippingFee;
+    private BigDecimal distanceKm;
+    private String storeName;
 
     private Integer userId;
     // private String userName;

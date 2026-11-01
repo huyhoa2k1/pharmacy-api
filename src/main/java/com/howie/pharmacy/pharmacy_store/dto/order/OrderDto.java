@@ -24,6 +24,9 @@ public class OrderDto {
     private Order.Status status;
     private String slugStatus;
     private String orderCode;
+    private BigDecimal shippingFee;
+    private BigDecimal distanceKm;
+    private String storeName;
 
     // private UserDto user; // User đầy đủ thông tin
     private ShippingAddressDto shippingAddress; // ShippingAddress đầy đủ thông tin

@@ -64,6 +64,16 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Store store;
+
+    @Column(name = "shipping_fee", nullable = false, precision = 10, scale = 2)
+    private BigDecimal shippingFee = BigDecimal.ZERO;
+
+    @Column(name = "distance_km", precision = 8, scale = 2)
+    private BigDecimal distanceKm;
+
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

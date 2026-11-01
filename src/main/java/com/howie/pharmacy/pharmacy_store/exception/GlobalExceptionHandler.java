@@ -81,6 +81,19 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
         }
 
+        @ExceptionHandler(AppExceptions.ServiceUnavailableException.class)
+        public ResponseEntity<ErrorResponse> handleServiceUnavailableException(
+                        AppExceptions.ServiceUnavailableException ex,
+                        HttpServletRequest request) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                                "Service Unavailable",
+                                ex.getMessage(),
+                                request.getRequestURI());
+                return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
                 ErrorResponse errorResponse = new ErrorResponse(
