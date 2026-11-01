@@ -17,11 +17,13 @@ public interface OrderMapper {
     OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
 
     @Mapping(target = "shippingAddress", source = "shippingAddress")
+    @Mapping(target = "storeName", source = "store.name")
     OrderDto toDto(Order order);
 
     @Mapping(target = "shippingAddress", source = "shippingAddress")
     @Mapping(target = "orderItems", source = "orderItems")
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "storeName", source = "store.name")
     OrderResponseDto toResponseDto(Order order);
 
     List<OrderResponseDto> toResponseDtoList(List<Order> orders);
@@ -36,6 +38,9 @@ public interface OrderMapper {
     @Mapping(target = "payosOrderCode", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "store", ignore = true)
+    @Mapping(target = "shippingFee", ignore = true)
+    @Mapping(target = "distanceKm", ignore = true)
     Order toEntity(OrderCreateDto orderCreateDto);
 
     @Mapping(target = "id", ignore = true)
@@ -48,5 +53,8 @@ public interface OrderMapper {
     @Mapping(target = "payosOrderCode", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "store", ignore = true)
+    @Mapping(target = "shippingFee", ignore = true)
+    @Mapping(target = "distanceKm", ignore = true)
     void updateEntityFromDto(OrderCreateDto orderCreateDto, @MappingTarget Order order);
 }
