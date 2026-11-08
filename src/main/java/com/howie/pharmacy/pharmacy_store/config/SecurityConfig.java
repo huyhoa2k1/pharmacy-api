@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import com.howie.pharmacy.pharmacy_store.filter.JwtAuthenticationFilter;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
@@ -51,6 +52,9 @@ public class SecurityConfig {
                 }))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // The JWT filter skips async dispatches, so SSE completion would otherwise be
+                        // rejected as 401 after the response is committed.
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/chat/**", "/api/chat").authenticated()
                         .requestMatchers(
                                 "/api/auth/**",
