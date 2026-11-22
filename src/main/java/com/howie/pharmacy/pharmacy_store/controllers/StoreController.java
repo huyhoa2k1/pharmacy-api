@@ -2,6 +2,7 @@ package com.howie.pharmacy.pharmacy_store.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreDto;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventoryDto;
+import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventorySearchRequest;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventoryUpdateDto;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreRequestDto;
+import com.howie.pharmacy.pharmacy_store.dto.store.StoreSearchRequest;
 import com.howie.pharmacy.pharmacy_store.services.StoreService;
 
 import jakarta.validation.Valid;
@@ -30,10 +33,9 @@ public class StoreController {
         this.storeService = storeService;
     }
 
-    @GetMapping
-    public List<StoreDto> getStores(@RequestParam(required = false) String provinceCode,
-            @RequestParam(defaultValue = "false") boolean includeInactive) {
-        return storeService.list(provinceCode, includeInactive);
+    @PostMapping("/getAllStores")
+    public Page<StoreDto> getAllStores(@RequestBody StoreSearchRequest request) {
+        return storeService.getAllStores(request);
     }
 
     @GetMapping("/{id}")
@@ -51,9 +53,9 @@ public class StoreController {
         return storeService.update(id, request);
     }
 
-    @GetMapping("/{id}/inventory")
-    public List<StoreInventoryDto> getInventory(@PathVariable Integer id) {
-        return storeService.getInventory(id);
+    @PostMapping("/getAllInventory")
+    public Page<StoreInventoryDto> getAllInventory(@RequestBody StoreInventorySearchRequest request) {
+        return storeService.getAllInventory(request);
     }
 
     @PutMapping("/{id}/inventory")

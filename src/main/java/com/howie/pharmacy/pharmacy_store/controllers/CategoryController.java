@@ -1,5 +1,6 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryDto;
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryResponseDto;
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryCreateDto;
+import com.howie.pharmacy.pharmacy_store.dto.common.ListRequest;
 import com.howie.pharmacy.pharmacy_store.services.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,11 +31,10 @@ public class CategoryController {
                 .orElse(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
     }
 
-    @GetMapping
+    @PostMapping("/getAllCategories")
     @Operation(summary = "Get all categories")
-    public ResponseEntity<Iterable<CategoryResponseDto>> getAllCategories() {
-        Iterable<CategoryResponseDto> categories = categoryService.findAll();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+    public ResponseEntity<Page<CategoryResponseDto>> getAllCategories(@RequestBody ListRequest request) {
+        return new ResponseEntity<>(categoryService.getAllCategories(request), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

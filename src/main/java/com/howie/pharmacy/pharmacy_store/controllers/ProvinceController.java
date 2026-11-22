@@ -4,8 +4,8 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.howie.pharmacy.pharmacy_store.dto.ProvinceImportRequest;
 import com.howie.pharmacy.pharmacy_store.dto.WardImportRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.ListRequest;
 import com.howie.pharmacy.pharmacy_store.entity.Province;
 import com.howie.pharmacy.pharmacy_store.services.ProvinceService;
 import com.howie.pharmacy.pharmacy_store.services.WardService;
@@ -29,9 +30,9 @@ public class ProvinceController {
         this.wardService = wardService;
     }
 
-    @GetMapping()
-    public List<Province> getAllProvinces() {
-        return provinceService.findAll();
+    @PostMapping("/getAllProvinces")
+    public Page<Province> getAllProvinces(@RequestBody ListRequest request) {
+        return provinceService.getAllProvinces(request);
     }
 
     @PostMapping("/import")

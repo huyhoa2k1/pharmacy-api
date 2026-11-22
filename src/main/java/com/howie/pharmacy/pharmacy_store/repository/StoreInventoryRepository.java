@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,8 @@ import com.howie.pharmacy.pharmacy_store.entity.StoreInventory;
 
 import jakarta.persistence.LockModeType;
 
-public interface StoreInventoryRepository extends JpaRepository<StoreInventory, Integer> {
+public interface StoreInventoryRepository
+        extends JpaRepository<StoreInventory, Integer>, JpaSpecificationExecutor<StoreInventory> {
 
     @Query("SELECT i FROM StoreInventory i JOIN FETCH i.product p WHERE i.store.id = :storeId ORDER BY p.name")
     List<StoreInventory> findByStoreIdWithProduct(@Param("storeId") Integer storeId);

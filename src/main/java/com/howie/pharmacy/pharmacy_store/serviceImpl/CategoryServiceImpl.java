@@ -1,9 +1,14 @@
 package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import com.howie.pharmacy.pharmacy_store.dto.common.ListRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest.FilterOp;
 
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryDto;
 import com.howie.pharmacy.pharmacy_store.dto.category.CategoryResponseDto;
@@ -14,6 +19,8 @@ import com.howie.pharmacy.pharmacy_store.repository.CategoryRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.CategoryService;
 import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
 
 import jakarta.transaction.Transactional;
 
@@ -32,11 +39,17 @@ public class CategoryServiceImpl implements CategoryService {
         this.productVectorIndexService = productVectorIndexService;
     }
 
+    private static final Map<String, Field> CATEGORY_FIELDS = Map.of(
+            "id", Field.of("id"),
+            "name", Field.of("name"),
+            "slug", Field.of("slug"),
+            "createdAt", Field.of("createdAt", FilterOp.BETWEEN));
+
     @Override
     @Transactional
-    public List<CategoryResponseDto> findAll() {
-        List<Category> categories = categoryRepository.findAll();
-        return categoryMapper.toResponseDtoList(categories);
+    public Page<CategoryResponseDto> getAllCategories(ListRequest request) {
+        return SpecificationBuilder.page(categoryRepository, request.getPager(), CATEGORY_FIELDS,
+                Sort.by(Sort.Direction.ASC, "id"), null).map(categoryMapper::toResponseDto);
     }
 
     @Override
@@ -67,7 +80,8 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryMapper.updateEntityFromDto(categoryCreateDto, existingCategory);
-        // Blank imageUrl is the client's signal to clear the image; null keeps the current one.
+        // Blank imageUrl is the client's signal to clear the image; null keeps the
+        // current one.
         if (categoryCreateDto.getImageUrl() != null && categoryCreateDto.getImageUrl().isBlank()) {
             existingCategory.setImageUrl(null);
         }

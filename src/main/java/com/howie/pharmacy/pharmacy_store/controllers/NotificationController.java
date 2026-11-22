@@ -1,9 +1,11 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
+import com.howie.pharmacy.pharmacy_store.dto.common.ListRequest;
 import com.howie.pharmacy.pharmacy_store.entity.Notification;
 import com.howie.pharmacy.pharmacy_store.services.NotificationService;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,9 +21,9 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @GetMapping
-    public List<Notification> getAll() {
-        return notificationService.getAllNotifications();
+    @PostMapping("/getAllNotifications")
+    public Page<Notification> getAllNotifications(@RequestBody ListRequest request) {
+        return notificationService.getAllNotifications(request);
     }
 
     @PostMapping("/mark-all-read")

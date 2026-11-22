@@ -1,13 +1,18 @@
 package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.dto.brand.BrandDto;
 import com.howie.pharmacy.pharmacy_store.dto.brand.BrandResponseDto;
 import com.howie.pharmacy.pharmacy_store.dto.brand.BrandCreateDto;
+import com.howie.pharmacy.pharmacy_store.dto.brand.BrandSearchRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest.FilterOp;
 import com.howie.pharmacy.pharmacy_store.entity.Brand;
 import com.howie.pharmacy.pharmacy_store.entity.Category;
 import com.howie.pharmacy.pharmacy_store.mapper.BrandMapper;
@@ -16,6 +21,8 @@ import com.howie.pharmacy.pharmacy_store.repository.CategoryRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.BrandService;
 import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
 
 import jakarta.transaction.Transactional;
 
@@ -38,11 +45,23 @@ public class BrandServiceImpl implements BrandService {
         this.productVectorIndexService = productVectorIndexService;
     }
 
+    private static final Map<String, Field> BRAND_FIELDS = Map.of(
+            "id", Field.of("id"),
+            "name", Field.of("name"),
+            "slug", Field.of("slug"),
+            "createdAt", Field.of("createdAt", FilterOp.BETWEEN),
+            "categoryId", Field.of("category.id"));
+
     @Transactional
     @Override
-    public List<BrandResponseDto> findAll() {
-        List<Brand> brands = brandRepository.findAll();
-        return brandMapper.toResponseDtoList(brands);
+    public Page<BrandResponseDto> getAllBrands(BrandSearchRequest request) {
+        Specification<Brand> extra = null;
+        if (request.getCategoryId() != null) {
+            Integer categoryId = request.getCategoryId();
+            extra = (root, q, cb) -> cb.equal(root.get("category").get("id"), categoryId);
+        }
+        return SpecificationBuilder.page(brandRepository, request.getPager(), BRAND_FIELDS,
+                Sort.by(Sort.Direction.ASC, "id"), extra).map(brandMapper::toResponseDto);
     }
 
     @Override
@@ -99,15 +118,6 @@ public class BrandServiceImpl implements BrandService {
     public Optional<BrandDto> findById(Integer id) {
         return brandRepository.findById(id)
                 .map(brandMapper::toDto);
-    }
-
-    @Override
-    @Transactional
-    public List<BrandResponseDto> getBrandsByCategory(Integer categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        List<Brand> brands = brandRepository.findByCategoryIdWithCategory(categoryId);
-        return brandMapper.toResponseDtoList(brands);
     }
 
 }
