@@ -2,14 +2,20 @@ package com.howie.pharmacy.pharmacy_store.services;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreDto;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventoryDto;
+import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventorySearchRequest;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreInventoryUpdateDto;
 import com.howie.pharmacy.pharmacy_store.dto.store.StoreRequestDto;
+import com.howie.pharmacy.pharmacy_store.dto.store.StoreSearchRequest;
 import com.howie.pharmacy.pharmacy_store.entity.Product;
 import com.howie.pharmacy.pharmacy_store.entity.Store;
 import com.howie.pharmacy.pharmacy_store.entity.StoreInventory;
@@ -17,6 +23,8 @@ import com.howie.pharmacy.pharmacy_store.exception.AppExceptions.ResourceNotFoun
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.repository.StoreInventoryRepository;
 import com.howie.pharmacy.pharmacy_store.repository.StoreRepository;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
 
 @Service
 public class StoreService {
@@ -32,18 +40,31 @@ public class StoreService {
         this.productRepository = productRepository;
     }
 
+    private static final Map<String, Field> STORE_FIELDS = Map.of(
+            "id", Field.of("id"),
+            "name", Field.of("name"),
+            "address", Field.of("address"),
+            "phone", Field.of("phone"),
+            "provinceCode", Field.of("provinceCode"),
+            "isActive", Field.of("isActive"));
+
+    private static final Map<String, Field> INVENTORY_FIELDS = Map.of(
+            "productId", Field.of("product.id"),
+            "productName", Field.of("product.name"),
+            "amount", Field.of("amount"));
+
     @Transactional(readOnly = true)
-    public List<StoreDto> list(String provinceCode, boolean includeInactive) {
-        boolean hasProvince = provinceCode != null && !provinceCode.isBlank();
-        List<Store> stores;
-        if (includeInactive) {
-            stores = hasProvince ? storeRepository.findByProvinceCodeOrderByNameAsc(provinceCode)
-                    : storeRepository.findAllByOrderByNameAsc();
-        } else {
-            stores = hasProvince ? storeRepository.findByProvinceCodeAndIsActiveTrueOrderByNameAsc(provinceCode)
-                    : storeRepository.findByIsActiveTrueOrderByNameAsc();
+    public Page<StoreDto> getAllStores(StoreSearchRequest request) {
+        Specification<Store> extra = (root, q, cb) -> cb.conjunction();
+        if (!request.isIncludeInactive()) {
+            extra = extra.and((root, q, cb) -> cb.isTrue(root.get("isActive")));
         }
-        return stores.stream().map(StoreService::toDto).toList();
+        if (request.getProvinceCode() != null && !request.getProvinceCode().isBlank()) {
+            String provinceCode = request.getProvinceCode();
+            extra = extra.and((root, q, cb) -> cb.equal(root.get("provinceCode"), provinceCode));
+        }
+        return SpecificationBuilder.page(storeRepository, request.getPager(), STORE_FIELDS,
+                Sort.by(Sort.Direction.ASC, "name"), extra).map(StoreService::toDto);
     }
 
     @Transactional(readOnly = true)
@@ -66,11 +87,13 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreInventoryDto> getInventory(Integer storeId) {
+    public Page<StoreInventoryDto> getAllInventory(StoreInventorySearchRequest request) {
+        Integer storeId = request.getStoreId();
         findStore(storeId);
-        return inventoryRepository.findByStoreIdWithProduct(storeId).stream()
-                .map(i -> new StoreInventoryDto(i.getProduct().getId(), i.getProduct().getName(), i.getAmount()))
-                .toList();
+        Specification<StoreInventory> extra = (root, q, cb) -> cb.equal(root.get("store").get("id"), storeId);
+        return SpecificationBuilder.page(inventoryRepository, request.getPager(), INVENTORY_FIELDS,
+                Sort.by(Sort.Direction.ASC, "product.name"), extra)
+                .map(i -> new StoreInventoryDto(i.getProduct().getId(), i.getProduct().getName(), i.getAmount()));
     }
 
     @Transactional

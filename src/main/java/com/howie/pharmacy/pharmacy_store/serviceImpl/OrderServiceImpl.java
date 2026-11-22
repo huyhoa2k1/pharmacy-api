@@ -2,13 +2,21 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.config.RabbitMQConfig;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest.FilterOp;
+import com.howie.pharmacy.pharmacy_store.dto.order.OrderSearchRequest;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderResponseDto;
@@ -32,6 +40,8 @@ import com.howie.pharmacy.pharmacy_store.repository.StoreInventoryRepository;
 import com.howie.pharmacy.pharmacy_store.repository.UserRepository;
 import com.howie.pharmacy.pharmacy_store.services.OrderService;
 import com.howie.pharmacy.pharmacy_store.services.ShippingQuoteService;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
 
 import jakarta.transaction.Transactional;
 
@@ -72,10 +82,29 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponseDtoList(orders);
     }
 
+    private static final Map<String, Field> ORDER_FIELDS = Map.ofEntries(
+            Map.entry("id", Field.of("id")),
+            Map.entry("orderCode", Field.of("orderCode")),
+            Map.entry("status", Field.of("status")),
+            Map.entry("paymentMethod", Field.of("paymentMethod")),
+            Map.entry("isPaid", Field.of("isPaid")),
+            Map.entry("totalPrice", Field.of("totalPrice", FilterOp.BETWEEN)),
+            Map.entry("createdAt", Field.of("createdAt", FilterOp.BETWEEN)),
+            Map.entry("userId", Field.of("user.id")),
+            Map.entry("storeId", Field.of("store.id")));
+
     @Override
-    public List<OrderResponseDto> getAllOrdersByUserId(Integer userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orderMapper.toResponseDtoList(orders);
+    public Page<OrderResponseDto> getAllOrders(OrderSearchRequest request) {
+        PagerRequest pager = request.getPager() != null ? request.getPager() : new PagerRequest();
+
+        Specification<Order> spec = SpecificationBuilder.<Order>build(pager, ORDER_FIELDS);
+        if (request.getUserId() != null) {
+            Integer userId = request.getUserId();
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("user").get("id"), userId));
+        }
+
+        Pageable pageable = SpecificationBuilder.pageable(pager, ORDER_FIELDS, Sort.by(Sort.Direction.DESC, "id"));
+        return orderRepository.findAll(spec, pageable).map(orderMapper::toResponseDto);
     }
 
     @Override

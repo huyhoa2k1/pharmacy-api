@@ -17,6 +17,7 @@ import com.howie.pharmacy.pharmacy_store.dto.product.ProductCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductResponseDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductSaleUpdateDto;
+import com.howie.pharmacy.pharmacy_store.dto.product.ProductSearchRequest;
 import com.howie.pharmacy.pharmacy_store.services.CloudinaryService;
 import com.howie.pharmacy.pharmacy_store.services.ProductService;
 
@@ -52,31 +53,9 @@ public class ProductController {
                 .orElse(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        List<ProductResponseDto> products = productService.findAll();
-        return new ResponseEntity<>(products, HttpStatus.OK);
-    }
-
-    @GetMapping("by-category/{categoryId}")
-    public ResponseEntity<Page<ProductResponseDto>> getProductsByCategory(@PathVariable Integer categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) List<Integer> brandIds,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(defaultValue = "price") String sort,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
-        Page<ProductResponseDto> productsPage = productService.getAllProductsByCategory(
-                categoryId,
-                brandIds,
-                minPrice,
-                maxPrice,
-                sort,
-                sortDirection,
-                page,
-                size);
-        return new ResponseEntity<>(productsPage, HttpStatus.OK);
+    @PostMapping("/getAllProducts")
+    public ResponseEntity<Page<ProductResponseDto>> getAllProducts(@RequestBody ProductSearchRequest request) {
+        return new ResponseEntity<>(productService.getAllProducts(request), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -104,16 +83,4 @@ public class ProductController {
         return new ResponseEntity<>(success, HttpStatus.OK);
     }
 
-    @GetMapping("/sale")
-    public ResponseEntity<List<ProductResponseDto>> getProductsOnSale() {
-        List<ProductResponseDto> productsOnSale = productService.getProductsOnSale();
-        return new ResponseEntity<>(productsOnSale, HttpStatus.OK);
-    }
-
-    @GetMapping("/best-sellers")
-    public ResponseEntity<List<ProductResponseDto>> getBestSellingProducts(
-            @RequestParam(defaultValue = "5") Integer minSold) {
-        List<ProductResponseDto> products = productService.getBestSellingProducts(minSold);
-        return new ResponseEntity<>(products, HttpStatus.OK);
-    }
 }

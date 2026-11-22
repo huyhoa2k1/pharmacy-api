@@ -1,8 +1,8 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
 
-import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderResponseDto;
+import com.howie.pharmacy.pharmacy_store.dto.order.OrderSearchRequest;
 import com.howie.pharmacy.pharmacy_store.entity.Order;
 import com.howie.pharmacy.pharmacy_store.services.OrderService;
 
@@ -22,16 +23,9 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
-        List<OrderResponseDto> orders = orderService.getAllOrders();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponseDto>> getAllOrdersByUserId(@PathVariable Integer userId) {
-        List<OrderResponseDto> orders = orderService.getAllOrdersByUserId(userId);
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+    @PostMapping("/getAllOrders")
+    public ResponseEntity<Page<OrderResponseDto>> getAllOrders(@RequestBody OrderSearchRequest request) {
+        return new ResponseEntity<>(orderService.getAllOrders(request), HttpStatus.OK);
     }
 
     @PostMapping

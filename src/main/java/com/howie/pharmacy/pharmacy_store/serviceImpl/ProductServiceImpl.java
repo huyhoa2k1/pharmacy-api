@@ -3,19 +3,23 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductDto;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest.FilterOp;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductResponseDto;
+import com.howie.pharmacy.pharmacy_store.dto.product.ProductSearchRequest;
 import com.howie.pharmacy.pharmacy_store.entity.Brand;
 import com.howie.pharmacy.pharmacy_store.entity.Product;
 import com.howie.pharmacy.pharmacy_store.exception.AppExceptions.ResourceNotFoundException;
@@ -25,6 +29,8 @@ import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.ProductService;
 import com.howie.pharmacy.pharmacy_store.services.ProductVectorIndexService;
 import com.howie.pharmacy.pharmacy_store.services.StoreService;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -45,27 +51,40 @@ public class ProductServiceImpl implements ProductService {
         this.storeService = storeService;
     }
 
-    @Override
-    // @Cacheable(value = "productCache", key = "'allProducts'")
-    public List<ProductResponseDto> findAll() {
-        List<Product> products = productRepository.findAll();
-        return productMapper.toResponseDtoList(products);
-    }
+    private static final Map<String, Field> PRODUCT_FIELDS = Map.ofEntries(
+            Map.entry("id", Field.of("id")),
+            Map.entry("name", Field.of("name")),
+            Map.entry("productName", Field.of("name")),
+            Map.entry("description", Field.of("description")),
+            Map.entry("price", Field.of("price", FilterOp.BETWEEN)),
+            Map.entry("sold", Field.of("sold")),
+            Map.entry("amount", Field.of("amount")),
+            Map.entry("isSale", Field.of("isSale")),
+            Map.entry("createdAt", Field.of("createdAt")),
+            Map.entry("brandId", Field.of("brand.id")),
+            Map.entry("categoryId", Field.of("brand.category.id")));
 
     @Override
-    // @Cacheable(value = "productCache", key = "#id")
-    public Page<ProductResponseDto> getAllProductsByCategory(Integer categoryId, List<Integer> brandIds,
-            Double minPrice, Double maxPrice, String sortBy, String sortDirection, int pageNo,
-            int pageSize) {
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> getAllProducts(ProductSearchRequest request) {
+        PagerRequest pager = request.getPager() != null ? request.getPager() : new PagerRequest();
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Specification<Product> spec = SpecificationBuilder.<Product>build(pager, PRODUCT_FIELDS);
+        if (request.getCategoryId() != null) {
+            Integer categoryId = request.getCategoryId();
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("brand").get("category").get("id"), categoryId));
+        }
+        if (request.getOnSale() != null) {
+            Boolean onSale = request.getOnSale();
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("isSale"), onSale));
+        }
+        if (request.getMinSold() != null) {
+            Integer minSold = Math.max(request.getMinSold(), 0);
+            spec = spec.and((root, q, cb) -> cb.greaterThanOrEqualTo(root.get("sold"), minSold));
+        }
 
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
-
-        Page<Product> productsPage = productRepository.getAllProductsByCategory(categoryId, brandIds, minPrice,
-                maxPrice, pageable);
-
-        return productsPage.map(productMapper::toResponseDto);
+        Pageable pageable = SpecificationBuilder.pageable(pager, PRODUCT_FIELDS, Sort.by(Sort.Direction.ASC, "id"));
+        return productRepository.findAll(spec, pageable).map(productMapper::toResponseDto);
     }
 
     @Override
@@ -182,21 +201,6 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.saveAll(products);
         return true;
-    }
-
-    @Override
-    public List<ProductResponseDto> getProductsOnSale() {
-        List<Product> productsOnSale = productRepository.getProductsOnSale();
-        return productMapper.toResponseDtoList(productsOnSale);
-    }
-
-    @Override
-    public List<ProductResponseDto> getBestSellingProducts(Integer minSold) {
-        if (minSold == null || minSold < 0) {
-            minSold = 5;
-        }
-        List<Product> products = productRepository.getBestSellingProducts(minSold);
-        return productMapper.toResponseDtoList(products);
     }
 
 }

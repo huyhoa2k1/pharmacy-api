@@ -2,9 +2,18 @@ package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.howie.pharmacy.pharmacy_store.dto.common.ListRequest;
+import com.howie.pharmacy.pharmacy_store.dto.common.PagerRequest.FilterOp;
 import com.howie.pharmacy.pharmacy_store.entity.Notification;
 import com.howie.pharmacy.pharmacy_store.repository.NotificationRepository;
 import com.howie.pharmacy.pharmacy_store.services.NotificationService;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder;
+import com.howie.pharmacy.pharmacy_store.utils.SpecificationBuilder.Field;
+
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -49,9 +58,16 @@ public class NotificationServiceImpl implements NotificationService {
         return saved;
     }
 
+    private static final Map<String, Field> NOTIFICATION_FIELDS = Map.of(
+            "id", Field.of("id"),
+            "message", Field.of("message"),
+            "isReaded", Field.of("isReaded"),
+            "createdAt", Field.of("createdAt", FilterOp.BETWEEN));
+
     @Override
-    public java.util.List<Notification> getAllNotifications() {
-        return notificationRepository.findAll();
+    public Page<Notification> getAllNotifications(ListRequest request) {
+        return SpecificationBuilder.page(notificationRepository, request.getPager(), NOTIFICATION_FIELDS,
+                Sort.by(Sort.Direction.ASC, "id"), null);
     }
 
     @Override
