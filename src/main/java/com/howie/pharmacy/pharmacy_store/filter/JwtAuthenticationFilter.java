@@ -1,6 +1,7 @@
 package com.howie.pharmacy.pharmacy_store.filter;
 
 import com.howie.pharmacy.pharmacy_store.utils.JwtUtils;
+import com.howie.pharmacy.pharmacy_store.serviceImpl.TokenSessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +18,11 @@ import java.util.ArrayList;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
+    private final TokenSessionService tokenSessionService;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils) {
+    public JwtAuthenticationFilter(JwtUtils jwtUtils, TokenSessionService tokenSessionService) {
         this.jwtUtils = jwtUtils;
+        this.tokenSessionService = tokenSessionService;
     }
 
     @Override
@@ -33,6 +36,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 2. Kiểm tra token
             if (jwtUtils.validateToken(token)) {
+                String sessionId = jwtUtils.getSessionIdFromToken(token);
+                if (sessionId == null || tokenSessionService.isRevoked(sessionId)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 String phone = jwtUtils.getPhoneFromToken(token);
                 Integer userId = jwtUtils.getUserIdFromToken(token);
                 UserPrincipal principal = new UserPrincipal(userId, phone);

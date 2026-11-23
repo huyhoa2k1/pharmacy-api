@@ -27,10 +27,11 @@ public class AuthServiceImpl {
     private final RefreshTokenServiceImpl refreshTokenService;
     private final OrderRepository orderRepository;
     private final LoginRateLimiterService loginRateLimiterService;
+    private final TokenSessionService tokenSessionService;
 
     public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper,
             JwtUtils jwtUtils, RefreshTokenServiceImpl refreshTokenService, OrderRepository orderRepository,
-            LoginRateLimiterService loginRateLimiterService) {
+            LoginRateLimiterService loginRateLimiterService, TokenSessionService tokenSessionService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
@@ -38,6 +39,7 @@ public class AuthServiceImpl {
         this.refreshTokenService = refreshTokenService;
         this.orderRepository = orderRepository;
         this.loginRateLimiterService = loginRateLimiterService;
+        this.tokenSessionService = tokenSessionService;
     }
 
     @Transactional
@@ -77,8 +79,8 @@ public class AuthServiceImpl {
 
         loginRateLimiterService.resetFailedAttempts(phone);
 
-        String accessToken = jwtUtils.generateToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
+        String accessToken = jwtUtils.generateToken(user, tokenSessionService.sessionId(refreshToken));
         return new AuthResponseDto(accessToken, refreshToken, userMapper.toDto(user));
     }
 }
