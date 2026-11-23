@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class RefreshTokenServiceImpl {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final TokenSessionService tokenSessionService;
 
     private final long REFRESH_EXPIRATION = 259200000L; // 3 days
 
@@ -28,6 +29,10 @@ public class RefreshTokenServiceImpl {
 
         RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
                 .orElse(new RefreshToken());
+
+        if (refreshToken.getToken() != null) {
+            tokenSessionService.revoke(tokenSessionService.sessionId(refreshToken.getToken()));
+        }
 
         refreshToken.setUser(user);
         refreshToken.setToken(UUID.randomUUID().toString());
@@ -46,5 +51,13 @@ public class RefreshTokenServiceImpl {
 
     public java.util.Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
+    }
+
+    @Transactional
+    public void revoke(String token) {
+        if (refreshTokenRepository.findByToken(token).isPresent()) {
+            tokenSessionService.revoke(tokenSessionService.sessionId(token));
+            refreshTokenRepository.deleteByTokenValue(token);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.howie.pharmacy.pharmacy_store.utils;
 
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.howie.pharmacy.pharmacy_store.entity.User;
 
@@ -14,18 +15,26 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class JwtUtils {
 
-    private final String JWT_SECRET = "YourSecretKeyShouldBeVeryLongAndSecureForHS256Algorithm";
+    private final String jwtSecret;
     private final long JWT_EXPIRATION = 300000L; // 5 minutes
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+    public JwtUtils(@Value("${JWT_SECRET}") String jwtSecret) {
+        if (jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalArgumentException("JWT_SECRET must be at least 32 bytes");
+        }
+        this.jwtSecret = jwtSecret;
     }
 
-    public String generateToken(User user) {
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String generateToken(User user, String sessionId) {
         return Jwts.builder()
                 .setSubject(user.getPhone())
                 .claim("role", user.getRole().name())
                 .claim("userId", user.getId())
+                .claim("sessionId", sessionId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -48,6 +57,15 @@ public class JwtUtils {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("userId", Integer.class);
+    }
+
+    public String getSessionIdFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("sessionId", String.class);
     }
 
     public boolean validateToken(String token) {

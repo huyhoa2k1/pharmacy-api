@@ -12,9 +12,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import com.howie.pharmacy.pharmacy_store.filter.JwtAuthenticationFilter;
+import com.howie.pharmacy.pharmacy_store.security.AuthCookieService;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,10 +27,13 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final List<String> allowedOrigins;
+    private final AuthCookieService authCookieService;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-            @Value("${pharmacy.cors.allowed-origins:http://localhost:5173}") String allowedOrigins) {
+            @Value("${pharmacy.cors.allowed-origins:http://localhost:5173}") String allowedOrigins,
+            AuthCookieService authCookieService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authCookieService = authCookieService;
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())
@@ -50,7 +56,14 @@ public class SecurityConfig {
                     config.setAllowCredentials(true);
                     return config;
                 }))
-                .csrf(csrf -> csrf.disable())
+                // Only the cookie-authenticated endpoints need CSRF; everything else uses the
+                // Bearer header.
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfTokenRepository())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .requireCsrfProtectionMatcher(request -> "POST".equals(request.getMethod())
+                                && ("/api/auth/refresh".equals(request.getRequestURI())
+                                        || "/api/auth/logout".equals(request.getRequestURI()))))
                 .authorizeHttpRequests(auth -> auth
                         // The JWT filter skips async dispatches, so SSE completion would otherwise be
                         // rejected as 401 after the response is committed.
@@ -75,6 +88,15 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    private CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        repository.setCookiePath(AuthCookieService.AUTH_PATH);
+        repository.setCookieCustomizer(cookie -> cookie
+                .secure(authCookieService.isSecure())
+                .sameSite(authCookieService.getSameSite()));
+        return repository;
     }
 
 }
